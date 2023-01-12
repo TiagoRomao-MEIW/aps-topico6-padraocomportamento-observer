@@ -1,0 +1,23 @@
+{
+  "name": "APS 2022/2023 | ActivityProvider",
+  "version": "1.0.5",
+  "description": "AP com padrão de criação (Prototype)",
+  "main": "AP.js",
+  "scripts": {
+    "start": "nodemon AP.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongodb": "^4.13.0",
+    "nodemon": "^2.0.20"
+  },
+  "devDependencies": {
+    "eslint": "^8.31.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
