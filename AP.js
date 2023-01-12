@@ -15,6 +15,7 @@ const mongoUrl = process.env.DB_CONN;
 const mongoDbName = 'mydb';
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
+const PORT = process.env.PORT || 3000;
 
 const swaggerOptions = {
   swaggerDefinition: {
@@ -35,7 +36,6 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-console.log(swaggerOptions);
 
 let mongoClient;
 
@@ -83,7 +83,6 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
 // webservice para configurar uma atividade
 app.get('/config_url', (req, res) => {
-  console.log(swaggerDocs);
   res.send(`
     <form method="POST" action="/config_url">
       <label for="DiscordChID">ID Canal Discord:</label><br>
@@ -448,7 +447,6 @@ app.post('/analytics_url', (req, res) => {
       res.sendStatus(500);
       return;
     }
-    console.log(docs);
     res.send(`
       <h1>Analytics</h1>
       <table>
@@ -479,11 +477,7 @@ app.post('/analytics_url', (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log('Server listening on port 3000');
-  console.log('http://localhost:3000/');
-});
-
+app.listen(PORT, () => console.log(`API a correr em http://localhost:${PORT}`));
 
 // comunica com a API do Discord e extrai as mensagens do canal do Discord configurado da atividade do utilizado do aluno identificado na atividade
 async function createAnalytics(activityID, InveniRAstdID, DiscordUsername, DiscordChID, req, res) {
@@ -530,7 +524,7 @@ async function checkDiscordAPI(activity, DiscordUsername, DiscordChID, res) {
               },
             },
           });
-      res.send(`Could not find channel with ID: <b>${DiscordChID}</b>`);
+      res.send(`Não foi possível encontrar o canal com o ID: <b>${DiscordChID}</b>`);
       return;
     }
     channel.messages.fetch({limit: 100}).then((messages) => {
@@ -566,7 +560,7 @@ async function checkDiscordAPI(activity, DiscordUsername, DiscordChID, res) {
               res.sendStatus(500);
               return;
             }
-            console.log(activity);
+            // console.log(activity);
             res.send('Atividade realizada com sucesso!');
           },
       );
@@ -584,7 +578,7 @@ async function checkDiscordAPI(activity, DiscordUsername, DiscordChID, res) {
           DtUltMsgSlack: '',
         },
       };
-      console.log(activityAnalytics);
+      // console.log(activityAnalytics);
       return activityAnalytics;
     }).catch((error) => {
       console.error(error);
@@ -613,13 +607,11 @@ function ActivityDecorator(activity, updateCount=0) {
 }
 
 ActivityDecorator.prototype.update = function() {
-  console.log('I was here!');
   this.updateCount++;
   this.activity.update();
 };
 
 ActivityDecorator.prototype.getUpdatesCount = function() {
-  console.log('I was ALSO here!');
   return this.updateCount;
 };
 
@@ -649,7 +641,6 @@ ActivitySubject.prototype.notifyObservers = function(param, newId) {
 
 function ActivityObserver(param, newId) {
   this.update = function(param, newId) {
-    console.log('newId 1:', newId);
     if (this.param === 'create') {
       console.log(`Uma nova atividade foi criada com o ID: ${newId}.`);
     } else if (this.param === 'update') {
