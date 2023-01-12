@@ -1,0 +1,118 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "AP API"
+    },
+    "host": "localhost:3000",
+    "basePath": "/",
+    "schemes": [
+      "http"
+    ],
+    "paths": {
+      "/config_url": {
+        "get": {
+          "summary": "Returns a form to configure an activity",
+          "responses": {
+            "200": {
+              "description": "Form to configure an activity"
+            }
+          }
+        },
+        "post": {
+          "summary": "Submits the form to configure an activity",
+          "parameters": [
+            {
+              "name": "DiscordChID",
+              "in": "formData",
+              "description": "Discord channel ID",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "name": "SlackChID",
+              "in": "formData",
+              "description": "Slack channel ID",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "activityID of the configured activity"
+            }
+          }
+        }
+      },
+      "/json_params_url/{activityID}": {
+        "get": {
+          "summary": "Returns the parameters of an activity in JSON format",
+          "parameters": [
+            {
+              "name": "activityID",
+              "in": "path",
+              "description": "ID of the activity",
+              "required": true,
+              "type": "number"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "JSON parameters of the activity"
+            }
+          }
+        }
+      },
+      "/analytics_list_url": {
+        "get": {
+          "summary": "Returns a list of analytics for an activity",
+          "responses": {
+            "200": {
+              "description": "List of analytics for the specified activity",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantAnalytics": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "MsgSlack": {
+                          "type": "boolean"
+                        },
+                        "MsgDiscord": {
+                          "type": "boolean"
+                        },
+                        "NumSlack": {
+                          "type": "number"
+                        },
+                        "NumDiscord": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  },
+                  "qualAnalytics": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "DataUltMsgSlack": {
+                          "type": "string"
+                        },
+                        "DataUltMsgDiscord": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  
+    }
+  }
+  

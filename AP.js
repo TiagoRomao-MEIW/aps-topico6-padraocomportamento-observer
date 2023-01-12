@@ -13,6 +13,29 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoUrl = process.env.DB_CONN;
 const mongoDbName = 'mydb';
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      description: 'Tiago Romão | UTAD 75309',
+      title: 'Activity Provider API',
+      version: '1.0.0',
+    },
+    /*     host: 'localhost:3000',
+    basePath: '/',
+    produces: [
+      'application/json',
+    ],
+    schemes: ['http'], */
+  },
+  apis: ['./AP.js'],
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+console.log(swaggerOptions);
 
 let mongoClient;
 
@@ -32,10 +55,35 @@ MongoClient.connect(mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true},
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
+/**
+ * @swagger
+ * paths:
+ *  /config_url:
+ *    get:
+ *      summary: Recebe HTML de configuração da atividade
+ *      tags: [1. Activity Configuration]
+ *      responses:
+ *        '200':
+ *          description: Recebe HTML de configuração da atividade
+ *          content:
+ *            text/html:
+ *              schema:
+ *                type: string
+ *                example:
+ *                  <form method="POST" action="/config_url">
+ *                    <label for="DiscordChID">ID Canal Discord:</label><br>
+ *                    <input type="text" id="DiscordChID" name="DiscordChID"><br>
+ *                    <label for="SlackChID">ID Grupo de Slack:</label><br>
+ *                    <input type="text" id="SlackChID" name="SlackChID"><br>
+ *                    <input type="submit" value="Submeter">
+ *                  </form>
+ */
 
 // webservice para configurar uma atividade
 app.get('/config_url', (req, res) => {
+  console.log(swaggerDocs);
   res.send(`
     <form method="POST" action="/config_url">
       <label for="DiscordChID">ID Canal Discord:</label><br>
@@ -76,6 +124,30 @@ app.post('/config_url', (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * paths:
+ *  /json_params_url/{activityID}:
+ *    get:
+ *      summary: Recebe JSON com lista de parametros da atividade
+ *      tags: [2. Activity Parameters]
+ *      parameters:
+ *      - in: path
+ *        name: activityID
+ *        schema:
+ *          type: integer
+ *        required: true
+ *        description: ID da atividade
+ *      responses:
+ *        '200':
+ *          description: Recebe JSON com lista de parametros da atividade
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ */
+
 // webservice que devolve lista dos parametros configurados de uma atividade em formato JSON
 app.get('/json_params_url/:activityID', (req, res) => {
   const activityID = Number(req.params.activityID);
@@ -94,6 +166,23 @@ app.get('/json_params_url/:activityID', (req, res) => {
     res.send(result);
   });
 });
+
+
+/**
+ * @swagger
+ * paths:
+ *  /analytics_list_url:
+ *    get:
+ *      summary: Recebe JSON com lista das analíticas a serem recolhidas da atividade
+ *      tags: [3. List of Analytics]
+ *      responses:
+ *        '200':
+ *          description: Recebe JSON com lista de parametros da atividade
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ */
 
 // webservice que devolve lista de analíticas a serem recolhidas em formato JSON
 app.get('/analytics_list_url', (req, res) => {
@@ -124,6 +213,39 @@ app.get('/analytics_list_url', (req, res) => {
   res.send(analytics);
 });
 
+
+/**
+ * @swagger
+ * paths:
+ *  /user_url/{activityID}:
+ *    get:
+ *      summary: Devolve URL com a atividade indicada no parametro
+ *      tags: [4. Deploy Activity]
+ *      parameters:
+ *      - in: path
+ *        name: activityID
+ *        schema:
+ *          type: integer
+ *        required: true
+ *        description: ID da atividade
+ *      responses:
+ *        '200':
+ *          description: Devolve URL com a atividade indicada no parametro
+ *          content:
+ *            text/html:
+ *              schema:
+ *                type: string
+ *                example:
+ *                  <form method="POST" action="/user_url">
+ *                      <input type="hidden" name="activityID" value="${activityID}">
+ *                      <label for="InveniRAstdID">Insira o n.º de aluno:</label><br>
+ *                      <input type="text" id="InveniRAstdID" name="InveniRAstdID"><br>
+ *                      <input type="hidden" name="DiscordChID" value="${doc.jsonParams.DiscordChID}">
+ *                      <input type="hidden" name="SlackChID" value="${doc.jsonParams.SlackChID}">
+ *                      <input type="submit" value="Submit">
+ *                  </form>
+ */
+
 // webservice para efetuar o deploy de uma atividade
 app.get('/user_url/:activityID', (req, res) => {
   const activityID = Number(req.params.activityID);
@@ -148,6 +270,56 @@ app.get('/user_url/:activityID', (req, res) => {
       `);
   });
 });
+
+
+/**
+ * @swagger
+ * paths:
+ *  /user_url:
+ *    post:
+ *      summary: Devolve URL da atividade seguido do ID da instancia da atividade (activityID), o id do aluno (InveniRAstdID) e os parametros da atividade
+ *      tags: [4. Deploy Activity]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *            application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                      activityID:
+ *                          type: integer
+ *                      InveniRAstdID:
+ *                          type: integer
+ *                      DiscordUsername:
+ *                          type: integer
+ *                      SlackUsername:
+ *                          type: integer
+ *                      json_params:
+ *                          type: object
+ *                          properties:
+ *                                  DiscordChID:
+ *                                      type: integer
+ *                                  SlackChID:
+ *                                      type: string
+ *      responses:
+ *        '200':
+ *          description: Devolve URL da atividade seguido do ID da instancia da atividade (activityID)
+ *          content:
+ *            text/html:
+ *              schema:
+ *                type: string
+ *                example:
+ *                    <form method="POST" action="/deploy_activity/${activityID}/${InveniRAstdID}">
+ *                        <input type="hidden" name="activityID" value="${activityID}">
+ *                        <label for="SlackUsername">Insira o seu utilizador de Slack:</label><br>
+ *                        <input type="text" id="SlackUsername" name="SlackUsername"><br>
+ *                        <label for="DiscordUsername">Insira o seu utilizador de Discord:</label><br>
+ *                        <input type="text" id="DiscordUsername" name="DiscordUsername"><br>
+ *                        <input type="hidden" name="DiscordChID" value="${jsonParams.DiscordChID}">
+ *                        <input type="hidden" name="SlackChID" value="${jsonParams.SlackChID}">
+ *                        <input type="submit" value="Submit">
+ *                    </form>
+ */
 
 // webservice de uma instancia da atividade realizada pelo aluno
 app.post('/user_url', (req, res) => {
@@ -209,6 +381,62 @@ app.post('/deploy_activity/:activityID/:InveniRAstdID', (req, res) => {
   createAnalytics(activityID, InveniRAstdID, DiscordUsername, DiscordChID, req, res);
 });
 
+/**
+ * @swagger
+ * paths:
+ *  /analytics_url:
+ *    post:
+ *      summary: Devolve as analiticas de todos os alunos, recolhidas para a atividade identificada (activityID)
+ *      tags: [5. Show All Activity Analytics]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                        activityID:
+ *                            type: string
+ *                      example:
+ *                        {
+ *                            "activityID": 1
+ *                        }
+ *      responses:
+ *        '200':
+ *          description: Devolve todas as analíticas recolhidas para a atividade
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  activityID:
+ *                    type: integer
+ *                  analytics:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        InveniRAstdID:
+ *                            type: string
+ *                        quantAnalytics:
+ *                            type: object
+ *                            properties:
+ *                                MsgDiscord:
+ *                                    type: boolean
+ *                                NumDiscord:
+ *                                    type: integer
+ *                                MsgSlack:
+ *                                    type: boolean
+ *                                NumSlack:
+ *                                    type: integer
+ *                        qualAnalytics:
+ *                            type: object
+ *                            properties:
+ *                                DtUltMsgDiscord:
+ *                                    type: string
+ *                                DtUltMsgSlack:
+ *                                    type: string
+ */
 
 // webservice que devolve a lista de analíticas recolhidas de uma determinada atividade (no corpo do pedido POST)
 app.post('/analytics_url', (req, res) => {
@@ -470,3 +698,4 @@ async function generateActivityId(DiscordChID, SlackChID) {
     return newId;
   };
 }
+
